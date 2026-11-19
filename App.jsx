@@ -22,12 +22,26 @@ function getPlaylistId(link) {
   return path[1];
 }
 
+// Spread the stations evenly across the FM dial (88.1 – 107.9 MHz).
+function frequency(index, count) {
+  const step = count > 1 ? 19.8 / (count - 1) : 0;
+  return (88.1 + index * step).toFixed(1);
+}
+
 function App() {
   const [stations, setStations] = useState(loadStations);
   const [selectedId, setSelectedId] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const selected = stations.find(station => station.id === selectedId) || stations[0];
+  const selectedIndex = stations.findIndex(station => station.id === selected?.id);
+
+  // Move to the previous (-1) or next (+1) station, wrapping around at the ends.
+  function changeChannel(step) {
+    if (stations.length === 0) return;
+    const nextIndex = (selectedIndex + step + stations.length) % stations.length;
+    setSelectedId(stations[nextIndex].id);
+  }
 
   async function addStation(event) {
     event.preventDefault();
@@ -111,6 +125,27 @@ function App() {
       {selected && (
         <section>
           <h2>{selected.friend}’s station</h2>
+          <div>
+            <button type="button" onClick={() => changeChannel(-1)} disabled={stations.length < 2}>
+              ◀ Previous channel
+            </button>
+            <span> {selectedIndex + 1} / {stations.length} </span>
+            <button type="button" onClick={() => changeChannel(1)} disabled={stations.length < 2}>
+              Next channel ▶
+            </button>
+          </div>
+          <p>FM {frequency(selectedIndex, stations.length)} MHz</p>
+          <div className="ticks">
+            {stations.map((station, index) => (
+              <button key={station.id} type="button" className="tick"
+                onClick={() => setSelectedId(station.id)}
+                aria-label={frequency(index, stations.length) + " MHz, " + station.friend + "’s station"}
+                aria-current={station.id === selected.id ? "true" : undefined}>
+                <span className="tick-bar" aria-hidden="true"></span>
+                <span className="tick-label">{frequency(index, stations.length)}</span>
+              </button>
+            ))}
+          </div>
           <iframe title={selected.title} height="352"
             src={"https://open.spotify.com/embed/playlist/" + selected.playlist + "?theme=0"}
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture" />
