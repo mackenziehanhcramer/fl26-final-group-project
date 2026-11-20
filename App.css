@@ -1,0 +1,598 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #ebe3d5;
+  color: #2b2118;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+
+main {
+  min-height: 100vh;
+  padding-bottom: 48px;
+}
+
+/* ========== TOPBAR / VINTAGE RECEIVER PLATE ========== */
+.topbar {
+  background: linear-gradient(180deg, #3b2618 0%, #24160d 100%);
+  color: #f7ecd9;
+  border-bottom: 4px solid #c89d54;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #f7ecd9;
+  text-shadow: 0 2px 0 #140b06;
+}
+
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-actions button {
+  background: linear-gradient(180deg, #f5ebd6 0%, #dfd1b8 100%);
+  color: #2b2118;
+  border: 2px solid #1a110b;
+  border-bottom-width: 4px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.topbar-actions button:hover {
+  background: #fff8eb;
+}
+
+.topbar-actions button:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.topbar-actions button.me {
+  border-radius: 999px;
+  background: linear-gradient(180deg, #d95338 0%, #b53820 100%);
+  color: #fff8eb;
+}
+
+/* ========== STATUS MESSAGES & EMPTY STATE ========== */
+main > p[role="status"] {
+  max-width: 740px;
+  margin: 14px auto 0;
+  padding: 0 16px;
+  color: #b53820;
+  font-weight: 700;
+  text-align: center;
+  min-height: 18px;
+}
+
+main > p:not([role="status"]) {
+  max-width: 740px;
+  margin: 32px auto;
+  padding: 24px;
+  text-align: center;
+  color: #5c4b3b;
+  background-color: #f7f1e3;
+  border: 2px dashed #b8a992;
+  border-radius: 8px;
+}
+
+/* ========== ADD FRIEND MODAL ========== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(24, 15, 9, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;
+}
+
+.modal {
+  background-color: #f7f1e3;
+  border: 4px solid #3b2618;
+  box-shadow: 8px 8px 0 #24160d;
+  border-radius: 8px;
+  padding: 24px;
+  width: 100%;
+  max-width: 430px;
+}
+
+.modal h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #2b2118;
+}
+
+.modal p {
+  margin: 0 0 14px;
+}
+
+.modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #4a3a2c;
+}
+
+.modal input {
+  background-color: #fffdf8;
+  padding: 9px 12px;
+  border: 2px solid #8c7a65;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.modal input:focus {
+  outline: none;
+  border-color: #d95338;
+}
+
+.modal p[role="status"] {
+  color: #b53820;
+  font-size: 13px;
+  min-height: 18px;
+}
+
+.modal button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.modal button:not([type="button"]) {
+  background-color: #d95338;
+  color: #fff8eb;
+  border: 2px solid #2b2118;
+  border-bottom-width: 4px;
+}
+
+.modal button:not([type="button"]):hover:not(:disabled) {
+  background-color: #c24229;
+}
+
+.modal button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal button[type="button"] {
+  background-color: #e6dcc8;
+  border: 2px solid #2b2118;
+  border-bottom-width: 4px;
+  color: #2b2118;
+}
+
+/* ========== RETRO WOOD & BRUSHED METAL RADIO CHASSIS ========== */
+.radio {
+  max-width: 740px;
+  margin: 20px auto 32px;
+  padding: 24px;
+  background-color: #f4ecdc;
+  border: 6px solid #4a2e1b;
+  outline: 2px solid #24160d;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(36, 22, 13, 0.22), inset 0 1px 0 #ffffff;
+}
+
+/* Glowing ON AIR Broadcast Lamp */
+.on-air {
+  display: inline-block;
+  margin: 0 0 16px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  background-color: #24160d;
+  color: #ff5938;
+  border: 2px solid #140b06;
+  text-shadow: 0 0 8px rgba(255, 89, 56, 0.85);
+}
+
+/* Album Art with Vinyl Sleeve Frame */
+.radio img {
+  float: left;
+  margin-right: 18px;
+  border-radius: 4px;
+  border: 3px solid #2b2118;
+  box-shadow: 4px 4px 0 #c8b99e;
+  object-fit: cover;
+}
+
+.radio h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2b2118;
+}
+
+.frequency {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #d95338;
+  letter-spacing: 0.5px;
+}
+
+.now-playing {
+  margin: 0 0 20px;
+  color: #5c4b3b;
+  font-size: 14px;
+  clear: both;
+  padding-top: 10px;
+}
+
+/* ========== BACKLIT GLASS FM TUNER DIAL ========== */
+.ticks {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px 12px;
+  margin-bottom: 22px;
+  background: linear-gradient(180deg, #1b2421 0%, #26332e 100%);
+  border: 4px solid #8c7a65;
+  border-radius: 6px;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.65);
+}
+
+.tick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #a8c7b8;
+  min-width: 52px;
+  transition: transform 0.1s ease;
+}
+
+.tick:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.tick-bar {
+  display: block;
+  width: 2px;
+  height: 18px;
+  background-color: #7ea392;
+}
+
+.tick-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Glowing Red Tuner Needle for Active Station */
+.tick[aria-current="true"] {
+  color: #ffb84d;
+  background-color: rgba(255, 89, 56, 0.15);
+}
+
+.tick[aria-current="true"] .tick-bar {
+  width: 4px;
+  height: 28px;
+  background-color: #ff4d2e;
+  box-shadow: 0 0 10px #ff4d2e, 0 0 4px #ffffff;
+}
+
+/* ========== TACTILE 3D DECK BUTTONS ========== */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.controls button {
+  background: linear-gradient(180deg, #fcf8f0 0%, #e3d7c1 100%);
+  border: 2px solid #2b2118;
+  border-bottom-width: 4px;
+  color: #2b2118;
+  padding: 9px 14px;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.controls button:hover:not(:disabled) {
+  background: #ffffff;
+}
+
+.controls button:active:not(:disabled) {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Orange-Red Play/Pause Key */
+.controls button:nth-child(2) {
+  background: linear-gradient(180deg, #e86043 0%, #c43c21 100%);
+  color: #fff8eb;
+}
+
+.controls button:nth-child(2):hover:not(:disabled) {
+  background: linear-gradient(180deg, #f26c4f 0%, #d14326 100%);
+}
+
+/* Latched Favorite Key */
+.controls button[aria-pressed="true"]:last-child {
+  background: #f5c969;
+  color: #2b2118;
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+/* Station Counter */
+.radio > span {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6e5c4b;
+  margin-bottom: 16px;
+}
+
+/* ========== ANALOG VOLUME SLIDER ========== */
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background-color: #e8decb;
+  border: 2px solid #b8a992;
+  border-radius: 6px;
+  margin-bottom: 18px;
+}
+
+.volume button {
+  background-color: #f7f1e3;
+  border: 2px solid #2b2118;
+  border-bottom-width: 3px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.volume label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4a3a2c;
+}
+
+.volume input[type="range"] {
+  flex: 1;
+  accent-color: #d95338;
+  cursor: pointer;
+}
+
+.volume output {
+  min-width: 32px;
+  text-align: center;
+  background-color: #24160d;
+  color: #ffb84d;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ========== CAR RADIO MEMORY PRESET BUTTONS ========== */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.presets > span:first-child {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #5c4b3b;
+  margin-right: 4px;
+}
+
+.preset {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(180deg, #fcf8f0 0%, #dfd2bc 100%);
+  border: 2px solid #2b2118;
+  border-bottom-width: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.preset button {
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2b2118;
+  cursor: pointer;
+}
+
+.preset button:hover {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.preset button:nth-child(2) {
+  color: #8c7a65;
+  border-left: 1px solid #b8a992;
+  padding: 6px 8px;
+}
+
+.preset button:nth-child(2):hover {
+  background-color: #d95338;
+  color: #ffffff;
+}
+
+/* ========== SPOTIFY EMBED & LINK ========== */
+.embed {
+  margin-bottom: 12px;
+  border: 3px solid #2b2118;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #191414;
+}
+
+.radio > a {
+  display: inline-block;
+  color: #b53820;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 2px solid #b53820;
+  padding-bottom: 2px;
+}
+
+.radio > a:hover {
+  color: #2b2118;
+  border-color: #2b2118;
+}
+
+/* ========== MY FAVORITES LOGBOOK ========== */
+section[aria-labelledby="favorites-title"] {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  background-color: #f7f1e3;
+  border: 3px solid #4a2e1b;
+  border-radius: 10px;
+}
+
+#favorites-title {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px dashed #b8a992;
+}
+section[aria-labelledby="favorites-title"] ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+section[aria-labelledby="favorites-title"] li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 8px;
+  border-bottom: 1px dashed #d1c4ae;
+}
+section[aria-labelledby="favorites-title"] li:last-child {
+  border-bottom: none;
+}
+section[aria-labelledby="favorites-title"] li:hover {
+  background-color: #ede3cf;
+}
+section[aria-labelledby="favorites-title"] button {
+  background-color: #fcf8f0;
+  border: 2px solid #2b2118;
+  border-bottom-width: 3px;
+  color: #d95338;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 6px;
+}
+section[aria-labelledby="favorites-title"] button:hover {
+  background-color: #d95338;
+  color: #ffffff;
+}
+
+/* ========== RESPONSIVE / MOBILE STYLES ========== */
+@media (max-width: 600px) {
+.topbar {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.radio {
+  margin: 12px;
+  padding: 16px;
+  border-width: 4px;
+}
+.radio img {
+  width: 56px;
+  height: 56px;
+  margin-right: 12px;
+}
+.controls button {
+  flex: 1 1 45%;
+  padding: 10px 12px;
+}
+.preset {
+  flex: 1 1 45%;
+  justify-content: space-between;
+}
+section[aria-labelledby="favorites-title"] {
+  margin: 0 12px;
+  padding: 16px;
+}
+main > p:not([role="status"]) {
+  margin: 20px 12px;
+}
+}
