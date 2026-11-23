@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
+import './App.css';
 
 
 /* ---------- Saving and loading helpers ---------- */
