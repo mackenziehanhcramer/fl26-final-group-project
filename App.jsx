@@ -88,24 +88,20 @@ function App() {
   const [message, setMessage] = useState("");         // little status/error text
   const [loading, setLoading] = useState(false);      // true while adding a station
 
-  // [NEW] Favorites: a list of station ids that have a filled-in heart.
-  const [favorites, setFavorites] = useState(() => loadJSON("friend.fm.favorites", []));
-
   // [NEW] Presets: 4 quick-tune buttons. Each slot holds a station id, or null if empty.
   const [presets, setPresets] = useState(() => {
     const saved = loadJSON("friend.fm.presets", []);
     return Array.from({ length: PRESET_COUNT }, (_, i) => saved[i] || null);
   });
 
-  // [NEW] Volume is a number from 0 to 100. "muted" is a separate on/off switch.
-  // (Heads up: see the [TODO] near the volume slider below.)
-  const [volume, setVolume] = useState(() => loadJSON("friend.fm.volume", 70));
-  const [muted, setMuted] = useState(false);
-
   // [NEW] More things to remember:
   const [isPlaying, setIsPlaying] = useState(false);        // is music playing right now?
   const [apiReady, setApiReady] = useState(false);          // has Spotify's player code finished loading?
   const [showAddFriend, setShowAddFriend] = useState(false); // is the Add friend pop-up open?
+  // [NEW] Which page we're on: "radio" (the player) or "catalog" (all stations).
+  const [view, setView] = useState("radio");
+  // [NEW] What's typed in the catalog's search box.
+  const [search, setSearch] = useState("");
 
   // [NEW] Refs. A ref is like a sticky note that React keeps for us. Unlike state,
   // changing a ref does NOT redraw the screen. We use them for things we need to
@@ -113,7 +109,6 @@ function App() {
   const embedRef = useRef(null);       // the empty box where Spotify's player gets placed
   const controllerRef = useRef(null);  // Spotify's remote control (play, pause, switch playlist)
   const creatingRef = useRef(false);   // true while we're still setting up that remote control
-  const favoritesRef = useRef(null);   // the "My favorites" section, so we can scroll to it
   const isPlayingRef = useRef(false);  // a copy of isPlaying that effects can read the latest value of
   const uriRef = useRef("");           // a copy of the current playlist uri, same idea
   isPlayingRef.current = isPlaying;
@@ -128,9 +123,16 @@ function App() {
   const selected = sorted.find(station => station.id === selectedId) || sorted[0];
   const selectedIndex = sorted.findIndex(station => station.id === selected?.id);
 
-  // [NEW] Only favorites whose station still exists (in case one was removed).
-  const favoriteStations = sorted.filter(station => favorites.includes(station.id));
-  const selectedIsFavorite = !!selected && favorites.includes(selected.id);
+  // [NEW] The stations that match the catalog's search box. We look at the friend's
+  // name, the playlist title and the frequency, and ignore upper/lower case.
+  // An empty search box matches everything.
+  const query = search.trim().toLowerCase();
+  const filteredStations = sorted.filter(station =>
+    !query ||
+    station.friend.toLowerCase().includes(query) ||
+    station.title.toLowerCase().includes(query) ||
+    station.frequency.includes(query)
+  );
 
   // [NEW] The format Spotify's player wants for a playlist, like "spotify:playlist:abc123"
   const uri = selected ? "spotify:playlist:" + selected.playlist : "";
@@ -144,15 +146,8 @@ function App() {
     localStorage.setItem("friend.fm.stations", JSON.stringify(stations));
   }, [stations]);
   useEffect(() => {
-    localStorage.setItem("friend.fm.favorites", JSON.stringify(favorites));
-  }, [favorites]);
-  useEffect(() => {
     localStorage.setItem("friend.fm.presets", JSON.stringify(presets));
   }, [presets]);
-  useEffect(() => {
-    localStorage.setItem("friend.fm.volume", JSON.stringify(volume));
-  }, [volume]);
-
   /* ---------- The Spotify player (this is how play/pause works) ----------
      Before, we just dropped in a plain <iframe>. That shows Spotify's player, but
      we can't press its buttons from our code. Spotify offers a small script that
@@ -241,22 +236,15 @@ function App() {
     setIsPlaying(playing => !playing);
   }
 
-  // [NEW] Used by the play buttons in "My favorites": tune to that station and
-  // start playing.
+  // [CHANGED] Used by the "Tune in" buttons in the catalog: tune to that station,
+  // start playing, and go back to the radio page so you can see it.
   function tuneAndPlay(id) {
     setIsPlaying(true);
     setSelectedId(id);
+    setView("radio");
     // If we're already on this station, nothing changes, so the player effect
     // above won't run. In that case we press play ourselves.
     if (id === selected?.id && controllerRef.current) controllerRef.current.play();
-  }
-
-  // [NEW] The heart button. If the station is already a favorite we remove it,
-  // otherwise we add it.
-  function toggleFavorite(id) {
-    setFavorites(current =>
-      current.includes(id) ? current.filter(item => item !== id) : [...current, id]
-    );
   }
 
   // [NEW] Pressing a preset button. Two cases:
@@ -274,20 +262,6 @@ function App() {
   // [NEW] The little × next to a preset: empties that slot.
   function clearPreset(slot) {
     setPresets(current => current.map((item, i) => (i === slot ? null : item)));
-  }
-
-  // [NEW] Changes the volume, keeping it between 0 and 100.
-  // Moving the slider also turns mute off, like most players do.
-  function changeVolume(value) {
-    setVolume(Math.max(0, Math.min(100, value)));
-    setMuted(false);
-  }
-  // What the slider and number should show: 0 while muted, otherwise the volume.
-  const shownVolume = muted ? 0 : volume;
-
-  // [NEW] The "Favorites" button in the header: smoothly scrolls down to the list.
-  function scrollToFavorites() {
-    favoritesRef.current?.scrollIntoView({ behavior: "smooth" });
   }
 
   // Runs when someone submits the "Add friend" form.
@@ -343,6 +317,7 @@ function App() {
       setStations(updated);
       setSelectedId(station.id);
       setMessage("Station saved.");
+      setSearch(""); // [NEW] clear the catalog search so the new station isn't hidden by it
       form.reset();
       setShowAddFriend(false); // [NEW] close the pop-up
     } catch (error) {
@@ -357,13 +332,16 @@ function App() {
      JavaScript, which is how we show our state and connect buttons to actions. */
   return (
     <main>
-      {/* [CHANGED] The header now matches the design: title, Favorites, Add friend, Me.
-          The class names (like "topbar") are there so CSS can style them later. */}
+      {/* [CHANGED] The header now matches the design: title, Catalog, Add friend, Me.
+          The Favorites button that used to be here is gone, and a Catalog button
+          took its place. */}
       <header className="topbar">
         <h1>FRIEND FM</h1>
         <div className="topbar-actions">
-          <button type="button" onClick={scrollToFavorites}>
-            ♥ Favorites ({favoriteStations.length})
+          {/* [NEW] Switches between the radio page and the catalog page. The label
+              always says where the button will take you. */}
+          <button type="button" onClick={() => setView(current => (current === "radio" ? "catalog" : "radio"))}>
+            {view === "radio" ? "Catalog (" + stations.length + ")" : "◀ Back to radio"}
           </button>
           <button type="button" onClick={() => { setMessage(""); setShowAddFriend(true); }}>
             + Add friend
@@ -406,9 +384,12 @@ function App() {
 
       {stations.length === 0 && <p>No stations yet. Use “+ Add friend” to tune in your first one.</p>}
 
-      {/* The radio itself. It only shows up once there's at least one station. */}
+      {/* The radio itself. It only shows up once there's at least one station.
+          [CHANGED] It stays on the page even while you're looking at the catalog; we
+          just hide it (the "hidden" part). That way Spotify's player isn't thrown
+          away, and your music keeps playing while you browse. */}
       {selected && (
-        <section className="radio" aria-label="Radio player">
+        <section className="radio" aria-label="Radio player" hidden={view !== "radio"}>
           {/* [NEW] The ON AIR light: on while music is playing */}
           <p className="on-air">{isPlaying ? "● ON AIR" : "○ OFF AIR"}</p>
 
@@ -437,7 +418,7 @@ function App() {
             ))}
           </div>
 
-          {/* The main buttons: previous, play/pause, next, favorite */}
+          {/* The main buttons: previous, play/pause, next */}
           <div className="controls">
             <button type="button" onClick={() => changeChannel(-1)} disabled={sorted.length < 2}
               aria-label="Previous channel">
@@ -452,33 +433,8 @@ function App() {
               aria-label="Next channel">
               Next channel ▶
             </button>
-            {/* [NEW] Heart for the station you're on right now */}
-            <button type="button" onClick={() => toggleFavorite(selected.id)}
-              aria-pressed={selectedIsFavorite}
-              aria-label={selectedIsFavorite ? "Remove from favorites" : "Add to favorites"}>
-              {selectedIsFavorite ? "♥" : "♡"} Favorite
-            </button>
           </div>
           <span> {selectedIndex + 1} / {sorted.length} </span>
-
-          {/* [NEW] Volume slider and mute button.
-              [TODO] Heads up: this slider is for show right now! Spotify's embedded
-              player doesn't let a website change its volume, so moving the slider
-              doesn't change the sound. A real volume control needs Spotify's Web
-              Playback SDK, which needs a Premium account and a login. The team
-              should decide whether that's worth it. */}
-          <div className="volume">
-            <button type="button" onClick={() => setMuted(value => !value)}
-              aria-pressed={muted} aria-label={muted ? "Unmute" : "Mute"}>
-              {muted || volume === 0 ? "🔇" : "🔊"}
-            </button>
-            <label>
-              Volume
-              <input type="range" min="0" max="100" value={shownVolume}
-                onChange={event => changeVolume(Number(event.target.value))} />
-            </label>
-            <output>{shownVolume}</output>
-          </div>
 
           {/* [NEW] Presets: an empty slot saves the station you're on, a filled slot
               tunes to its station. The × clears a slot. */}
@@ -511,31 +467,75 @@ function App() {
         </section>
       )}
 
-      {/* [NEW] The "My favorites" list from the design. Each row has a play button
-          (tune in and play) and a filled heart (tap to remove from favorites). */}
-      <section ref={favoritesRef} aria-labelledby="favorites-title">
-        <h2 id="favorites-title">My favorites</h2>
-        {favoriteStations.length === 0 && <p>No favorites yet. Tap ♡ on a station to add it.</p>}
-        <ol className="favorites">
-          {favoriteStations.map(station => (
-            <li key={station.id}>
-              {station.artwork && <img src={station.artwork} alt="" width="48" height="48" />}
-              <div>
-                <strong>{station.friend}’s playlist</strong>
-                <div>FM {station.frequency} MHz · {station.title}</div>
-              </div>
-              <button type="button" onClick={() => tuneAndPlay(station.id)}
-                aria-label={"Play " + station.friend + "’s playlist"}>▶</button>
-              <button type="button" onClick={() => toggleFavorite(station.id)}
-                aria-pressed="true" aria-label={"Remove " + station.friend + " from favorites"}>♥</button>
-            </li>
-          ))}
-        </ol>
-      </section>
+      {/* [NEW] The catalog page: every station in one place, with a search box.
+          It only shows while view is "catalog". */}
+      {view === "catalog" && (
+        <section className="catalog" aria-labelledby="catalog-title">
+          <h2 id="catalog-title">Station catalog</h2>
 
-      {/* [CHANGED] The big "Stations" button list from the original is gone. The dial
-          and the prev/next buttons now handle tuning. If the team still wants a full
-          list of stations, it can be added back. */}
+          {/* Nothing added yet: explain what to do. This is the starting screen for a new user. */}
+          {stations.length === 0 ? (
+            <div className="catalog-empty">
+              <p>No stations yet. Add a friend’s Spotify playlist to start your radio.</p>
+              <button type="button" onClick={() => { setMessage(""); setShowAddFriend(true); }}>
+                + Add friend
+              </button>
+            </div>
+          ) : (
+            <>
+              <label className="catalog-search">
+                <span>Search friends</span>
+                <input type="search" value={search} placeholder="Friend, playlist or frequency"
+                  onChange={event => setSearch(event.target.value)} />
+              </label>
+              {/* aria-live makes screen readers announce the count when the search changes */}
+              <p className="catalog-count" aria-live="polite">
+                {filteredStations.length} of {stations.length} station{stations.length === 1 ? "" : "s"}
+              </p>
+
+              {filteredStations.length === 0 && (
+                <p className="catalog-none">No stations match “{search.trim()}”.</p>
+              )}
+
+              <ul className="catalog-list">
+                {filteredStations.map(station => {
+                  const presetSlot = presets.indexOf(station.id); // -1 means not saved as a preset
+                  const isTuned = station.id === selected?.id;
+                  return (
+                    <li key={station.id} className={isTuned ? "catalog-item is-tuned" : "catalog-item"}>
+                      {station.artwork
+                        ? <img src={station.artwork} alt="" width="56" height="56" />
+                        : <span className="catalog-art-empty" aria-hidden="true">♪</span>}
+                      <div className="catalog-info">
+                        <strong>{station.friend}’s playlist</strong>
+                        <div className="catalog-freq">FM {station.frequency} MHz</div>
+                        <div className="catalog-title">{station.title}</div>
+                        <div className="catalog-badges">
+                          {isTuned && <span className="badge">{isPlaying ? "On air" : "Tuned in"}</span>}
+                          {presetSlot !== -1 && <span className="badge">Preset {presetSlot + 1}</span>}
+                        </div>
+                      </div>
+                      <div className="catalog-actions">
+                        <button type="button" onClick={() => tuneAndPlay(station.id)}
+                          aria-label={"Tune in to " + station.friend + "’s playlist"}>
+                          ▶ Tune in
+                        </button>
+                        <a href={"https://open.spotify.com/playlist/" + station.playlist}
+                          target="_blank" rel="noreferrer">
+                          Open in Spotify
+                        </a>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
+
+      {/* [CHANGED] The big "Stations" button list from the original is gone. The dial,
+          prev/next and the catalog now handle finding and tuning stations. */}
     </main>
   );
 }
